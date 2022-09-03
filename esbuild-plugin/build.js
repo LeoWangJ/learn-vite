@@ -1,5 +1,7 @@
 const {build} = require("esbuild")
 const httpImport = require("./html-import-plugin")
+const html = require("./html-generate-plugin")
+
 async function runBuild(){
   build({
     absWorkingDir: process.cwd(),
@@ -10,7 +12,10 @@ async function runBuild(){
     splitting: true,
     sourcemap: true,
     metafile: true,
-    plugins: [httpImport()],
+    plugins: [
+      httpImport(),
+      html()
+    ],
   }).then(()=> console.log('build finished!'))
 }
 
