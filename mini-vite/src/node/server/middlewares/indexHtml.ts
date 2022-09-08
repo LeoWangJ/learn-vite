@@ -10,7 +10,6 @@ export function indexHtmlMiddleware(serverContext: ServerContext): NextHandleFun
             const indexHtmlPath = path.join(root, 'index.html')
             if (await pathExists(indexHtmlPath)) {
                 let html = await readFile(indexHtmlPath, 'utf-8')
-                console.log(serverContext.plugins, html)
                 for (const plugin of serverContext.plugins) {
                     if (plugin.transformIndexHtml) {
                         html = await plugin.transformIndexHtml(html)

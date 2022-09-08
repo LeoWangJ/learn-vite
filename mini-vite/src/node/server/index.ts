@@ -5,6 +5,7 @@ import { resolvePlugins } from '../plugins'
 import { createPluginContainer, PluginContainer } from '../pluginContainer'
 import { Plugin } from '../plugin'
 import { indexHtmlMiddleware } from './middlewares/indexHtml'
+import { transformMiddleware } from './middlewares/transform'
 export interface ServerContext {
   root: string
   pluginContainer: PluginContainer
@@ -32,6 +33,7 @@ export async function startDevServer() {
     }
   }
   app.use(indexHtmlMiddleware(serverContext))
+  app.use(transformMiddleware(serverContext))
   app.listen(8484, async () => {
     await optimize(root)
     console.log(green('No Bundle Server Running!'), `cost ${Date.now() - startTime}ms time`)

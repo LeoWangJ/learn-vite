@@ -6,7 +6,9 @@ import { pathExists } from "fs-extra"
 import { DEFAULT_EXTENSIONS } from '../constants'
 import { cleanUrl } from "../utils"
 
-
+/**
+ * 解析資源路徑
+ */
 export function resolvePlugin(): Plugin {
     let serverContext: ServerContext
     return {
@@ -15,7 +17,6 @@ export function resolvePlugin(): Plugin {
             serverContext = s
         },
         async resolveId(id: string, importer?: string) {
-
             if (path.isAbsolute(id)) {
                 if (await pathExists(id)) {
                     return { id }
