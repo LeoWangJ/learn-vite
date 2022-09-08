@@ -1,0 +1,26 @@
+import { NextHandleFunction } from "connect";
+import { ServerContext } from "..";
+import path from 'path'
+import { pathExists, readFile } from "fs-extra";
+
+export function indexHtmlMiddleware(serverContext: ServerContext): NextHandleFunction {
+    return async (req, res, next) => {
+        if (req.url === '/') {
+            const { root } = serverContext
+            const indexHtmlPath = path.join(root, 'index.html')
+            if (await pathExists(indexHtmlPath)) {
+                let html = await readFile(indexHtmlPath, 'utf-8')
+                console.log(serverContext.plugins, html)
+                for (const plugin of serverContext.plugins) {
+                    if (plugin.transformIndexHtml) {
+                        html = await plugin.transformIndexHtml(html)
+                    }
+                }
+                res.statusCode = 200
+                res.setHeader('Content-Type', "text/html")
+                return res.end(html)
+            }
+        }
+        return next()
+    }
+}
