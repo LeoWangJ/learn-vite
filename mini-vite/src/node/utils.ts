@@ -16,6 +16,13 @@ export const isCSSRequest = (id:string):boolean =>{
     return cleanUrl(id).endsWith('.css')
 }
 
+export const isImportRequest = (id:string):boolean =>{
+    return  id.endsWith('?import')
+}
+
+export const removeImportQuery = (url:string):string =>{
+    return url.replace(/\?import$/,"")
+}
 export const cleanUrl = (url: string): string => {
     return url.replace(HASH_RE, "").replace(QUERY_RE, "")
 }
