@@ -6,8 +6,12 @@ import createDebug from 'debug'
 const debug = createDebug("dev")
 
 export async function transformRequest(url: string, serverContext: ServerContext) {
-    const { pluginContainer } = serverContext
+    const { moduleGraph,pluginContainer } = serverContext
     url = cleanUrl(url)
+    let mod = await moduleGraph.getModuleByUrl(url)
+    if(mod && mod.transformResult){
+        return mod.transformResult
+    }
     // 依次調用 resolved 、 load 、 transform
     const resolveResult = await pluginContainer.resolveId(url)
     let transformResult
@@ -16,10 +20,14 @@ export async function transformRequest(url: string, serverContext: ServerContext
         if (typeof code === 'object' && code !== null) {
             code = code.code
         }
-
+        const {moduleGraph} = serverContext
+        mod = await moduleGraph.ensureEntryFromUrl(url)
         if (code) {
             transformResult = await pluginContainer.transform(code, resolveResult.id)
         }
+    }
+    if(mod?.transformResult){
+        mod.transformResult = transformResult
     }
     return transformResult
 }

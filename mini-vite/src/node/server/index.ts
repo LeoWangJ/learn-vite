@@ -7,11 +7,13 @@ import { Plugin } from '../plugin'
 import { indexHtmlMiddleware } from './middlewares/indexHtml'
 import { transformMiddleware } from './middlewares/transform'
 import { staticMiddleware } from './middlewares/static'
+import { ModuleGraph } from '../moduleGraph'
 export interface ServerContext {
   root: string
   pluginContainer: PluginContainer
   app: connect.Server
-  plugins: Plugin[]
+  plugins: Plugin[],
+  moduleGraph:ModuleGraph
 }
 
 export async function startDevServer() {
@@ -20,12 +22,13 @@ export async function startDevServer() {
   const startTime = Date.now()
   const plugins = resolvePlugins()
   const pluginContainer = createPluginContainer(plugins)
-
+  const moduleGraph = new ModuleGraph((url) => pluginContainer.resolveId(url))
   const serverContext: ServerContext = {
     root: process.cwd(),
     app,
     pluginContainer,
-    plugins
+    plugins,
+    moduleGraph
   }
 
   for (const plugin of plugins) {

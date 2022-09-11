@@ -7,6 +7,7 @@ import { Plugin} from '../plugin'
 import { ServerContext} from '../server'
 import { pathExists } from 'fs-extra'
 import resolve from 'resolve'
+import { ModuleNode } from '../moduleGraph'
 
 /**
  * 對 import 重寫路徑
@@ -26,6 +27,10 @@ export function importAnalysisPlugin() {
       await init
       const [imports] = parse(code)
       const ms = new MagicString(code)
+      const { moduleGraph } = serverContext
+      const curMod = moduleGraph.getModuleId(id)
+      const importedModules = new Set<string>()
+
       for(const importInfo of imports){
         const { s:modStart, e:modEnd, n:modSource } = importInfo
         if(!modSource) continue
@@ -38,14 +43,17 @@ export function importAnalysisPlugin() {
         if(BARE_IMPORT_RE.test(modSource)){
           const bundlePath = path.join(serverContext.root,PRE_BUNDLE_DIR,`${modSource}.js`)
           ms.overwrite(modStart,modEnd,bundlePath)
+          importedModules.add(bundlePath)
         } else if(modSource.startsWith('.') || modSource.startsWith('/')){
           // 相對路徑或絕對路徑做處理
           const resolved = await this.resolve(modSource,id)
           if(resolved){
             ms.overwrite(modStart,modEnd,resolved.id)
+            importedModules.add(resolved)
           }
         }
       }
+      moduleGraph.updateModuleInfo(curMod as ModuleNode, importedModules)
       return {
         code: ms.toString(),
         map: ms.generateMap()
