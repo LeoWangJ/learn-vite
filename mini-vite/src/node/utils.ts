@@ -26,3 +26,6 @@ export const removeImportQuery = (url:string):string =>{
 export const cleanUrl = (url: string): string => {
     return url.replace(HASH_RE, "").replace(QUERY_RE, "")
 }
+export const getShortName = (file:string, root:string) => {
+    return file.startsWith(root + '/') ? path.posix.relative(root,file):file
+}
