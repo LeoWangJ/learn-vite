@@ -4,6 +4,15 @@ import { esbuildTransformPlugin } from "./esbuild"
 import { importAnalysisPlugin } from './importAnalysis'
 import { resolvePlugin } from './resolve'
 import { assetPlugin } from "./assets"
+import { clientInjectPlugin } from "../server/middlewares/clientInject"
+
 export function resolvePlugins(): Plugin[] {
-    return [resolvePlugin(), esbuildTransformPlugin(), importAnalysisPlugin(),cssPlugin(),assetPlugin()]
+    return [
+        clientInjectPlugin(),
+        resolvePlugin(),
+        esbuildTransformPlugin(),
+        importAnalysisPlugin(),
+        cssPlugin(),
+        assetPlugin()
+    ]
 }

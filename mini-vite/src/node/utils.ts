@@ -1,4 +1,4 @@
-import { HASH_RE, JS_TYPES_RE, QUERY_RE } from './constants'
+import { CLIENT_PUBLIC_PATH, HASH_RE, JS_TYPES_RE, QUERY_RE } from './constants'
 import path from 'path'
 
 export const isJSRequest = (id: string): boolean => {
@@ -12,20 +12,25 @@ export const isJSRequest = (id: string): boolean => {
     return false
 }
 
-export const isCSSRequest = (id:string):boolean =>{
+export const isCSSRequest = (id: string): boolean => {
     return cleanUrl(id).endsWith('.css')
 }
 
-export const isImportRequest = (id:string):boolean =>{
-    return  id.endsWith('?import')
+export const isImportRequest = (id: string): boolean => {
+    return id.endsWith('?import')
 }
 
-export const removeImportQuery = (url:string):string =>{
-    return url.replace(/\?import$/,"")
+export const removeImportQuery = (url: string): string => {
+    return url.replace(/\?import$/, "")
 }
 export const cleanUrl = (url: string): string => {
     return url.replace(HASH_RE, "").replace(QUERY_RE, "")
 }
-export const getShortName = (file:string, root:string) => {
-    return file.startsWith(root + '/') ? path.posix.relative(root,file):file
+export const getShortName = (file: string, root: string) => {
+    return file.startsWith(root + '/') ? path.posix.relative(root, file) : file
+}
+
+const INTERNAL_LIST = [CLIENT_PUBLIC_PATH, "/@react-refresh"]
+export const isInternalRequest = (url: string): boolean => {
+    return INTERNAL_LIST.includes(url)
 }

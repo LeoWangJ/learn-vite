@@ -1,15 +1,15 @@
-import { PartialResolvedId, TransformResult} from 'rollup'
+import { PartialResolvedId, TransformResult } from 'rollup'
 import { cleanUrl } from './utils'
 
 
 export class ModuleNode {
-  url:string
+  url: string
   id: string | null = null
   importers = new Set<ModuleNode>()
   importedModules = new Set<ModuleNode>()
   transformResult: TransformResult | null = null
   lastHMRTimestamp = 0
-  constructor(url:string){
+  constructor(url: string) {
     this.url = url
   }
 }
@@ -20,15 +20,15 @@ export class ModuleGraph {
 
   constructor(
     private resolveId: (url: string) => Promise<PartialResolvedId | null>
-  ) {}
- 
-  private async _resolve(url:string):Promise<{ url: string; resolvedId: string }>{
+  ) { }
+
+  private async _resolve(url: string): Promise<{ url: string; resolvedId: string }> {
     const resolved = await this.resolveId(url)
     const resolvedId = resolved?.id || url
-    return {url,resolvedId}
+    return { url, resolvedId }
   }
 
-  getModuleId(id:string):ModuleNode | undefined{
+  getModuleId(id: string): ModuleNode | undefined {
     return this.idToModuleMap.get(id)
   }
 
@@ -37,41 +37,42 @@ export class ModuleGraph {
     return this.urlToModuleMap.get(url);
   }
 
-  async ensureEntryFromUrl(rawUrl:string):Promise<ModuleNode>{
-    const {url, resolvedId} = await this._resolve(rawUrl)
+  async ensureEntryFromUrl(rawUrl: string): Promise<ModuleNode> {
+    const { url, resolvedId } = await this._resolve(rawUrl)
 
-    if(this.urlToModuleMap.has(url)){
+    if (this.urlToModuleMap.has(url)) {
       return this.urlToModuleMap.get(url) as ModuleNode
     }
     const mod = new ModuleNode(url)
     mod.id = resolvedId
-    this.idToModuleMap.set(resolvedId,mod)
-    this.urlToModuleMap.set(url,mod)
+    this.idToModuleMap.set(resolvedId, mod)
+    this.urlToModuleMap.set(url, mod)
     return mod
   }
-  
-  async updateModuleInfo (mod:ModuleNode,importedModules:Set<string | ModuleNode>){
+
+  async updateModuleInfo(mod: ModuleNode, importedModules: Set<string | ModuleNode>) {
     const prevImports = mod.importedModules
-    for(const curImports of importedModules){
+    for (const curImports of importedModules) {
       const dep = typeof curImports === 'string' ? await this.ensureEntryFromUrl(cleanUrl(curImports)) : curImports
-      if(dep){
+
+      if (dep) {
         mod.importedModules.add(dep)
         dep.importers.add(mod)
       }
-    } 
-    for(const prevImport of prevImports){
-      if(!importedModules.has(prevImport.url)){
+    }
+    for (const prevImport of prevImports) {
+      if (!importedModules.has(prevImport.url)) {
         prevImport.importers.delete(mod)
       }
     }
   }
 
-  invalidateModule(file:string){
+  invalidateModule(file: string) {
     const mod = this.idToModuleMap.get(file)
-    if(mod){
+    if (mod) {
       mod.lastHMRTimestamp = Date.now()
       mod.transformResult = null
-      mod.importers.forEach(importer =>{
+      mod.importers.forEach(importer => {
         this.invalidateModule(importer.id!)
       })
     }
